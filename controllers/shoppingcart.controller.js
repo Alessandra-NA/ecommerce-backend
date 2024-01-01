@@ -23,7 +23,7 @@ const getCartInfo = async (req, res) => {
       }
       res.json(cartInfo);
    } catch (error) {
-      res.status(400).send("Could not retrieve info from cart: ", error);
+      res.status(400).send("Could not retrieve info from cart: " + error);
    }
 }
 const addProductCart = async (req, res) => {
@@ -40,7 +40,7 @@ const addProductCart = async (req, res) => {
       const shoppingCart = await updateSubTotal(shoppingCartId, productId, quantity, 'add');
       res.status(201).json(shoppingCart);
    } catch (error) {
-      res.status(400).send("Product could not be added to cart: ", error);
+      res.status(400).send("Product could not be added to cart: " + error);
    }
 }
 
@@ -58,7 +58,7 @@ const deleteProductCart = async (req, res) => {
       const shoppingCart = await updateSubTotal(shoppingCartId, productId, quantity, 'delete');
       res.status(201).json(shoppingCart);
    } catch (error) {
-      res.status(400).send("Product could not be removed from cart: ", error);
+      res.status(400).send("Product could not be removed from cart: " + error);
    }
 }
 

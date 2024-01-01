@@ -6,7 +6,7 @@ const createProduct = async (req, res) => {
       const product = await Product.create(req.body)
       res.status(201).json(product)
    } catch (error) {
-      res.status(400).send("Product not created: ", error)
+      res.status(400).send("Product not created: " + error)
    }
 }
 const getProductInfo = async (req, res) => {
@@ -14,7 +14,7 @@ const getProductInfo = async (req, res) => {
       const product = await Product.findByPk(req.body.productId)
       res.status(201).json(product)
    } catch (error) {
-      res.status(400).send("Product not found: ", error)
+      res.status(400).send("Product not found: " + error)
    }   
 }
 const updateProductInfo = async (req, res) => {
@@ -25,7 +25,7 @@ const updateProductInfo = async (req, res) => {
       })
       res.status(201).json(product)
    } catch (error) {
-      res.status(400).send("Product not updated: ", error)
+      res.status(400).send("Product not updated: " + error)
    }
 }
 const deleteProduct = async (req, res) => {
@@ -33,7 +33,7 @@ const deleteProduct = async (req, res) => {
       await Product.destroy({ where: { id: req.body.productId } })
       res.status(201)
    } catch (error) {
-      res.status(400).send("Error deleting product: ", error)
+      res.status(400).send("Error deleting product: " + error)
    }
 }
 const getSaleProducts = async (req, res) => {
@@ -45,7 +45,7 @@ const getSaleProducts = async (req, res) => {
       })
       res.status(201).json(saleProducts)
    } catch (error) {
-      res.status(400).send("Error getting sale products: ", error)
+      res.status(400).send("Error getting sale products: " + error)
    }
 }
 const addCustomerFeedback = async (req, res) => {
