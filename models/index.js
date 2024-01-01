@@ -1,15 +1,18 @@
-const sequelize = require('./db');
+const sequelize = require('../db');
 
 const db = {
   Sequelize: sequelize,
   sequelize,
-//  ...require('./Usuario.js'),
+   ...require('./Product.js'),
+   ...require('./ShoppingCart.js'),
+   ...require('./ShoppingCartProduct.js'),
+   ...require('./User.js'),
 };
 
 Object.keys(db).forEach(modelName => {
-  if (db[modelName].associate) {
-    db[modelName].associate(db);
-  }
+   if (db[modelName].associate) {
+      db[modelName].associate(db);
+   }
 });
 
 

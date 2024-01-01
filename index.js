@@ -20,7 +20,7 @@ app.use(require('./routes/index'));
 app.listen(port, async () => {
   console.log(`Example app listening on port ${port}`)
   try {
-    await db.sync({ force: false });
+    await db.sync({ force: true });
   } catch (err) {
     console.log(err);
   }
