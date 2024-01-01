@@ -1,12 +1,27 @@
-const { User } = require("../models");
+const { User, ShoppingCart } = require("../models");
 
 const createUser = async (req, res) => {
+   // params: userId, firstname, lastname, email, password, role
    try {
       const user = await User.create(req.body);
-      res.status(201).send("User created");
+      const shoppingCart = await ShoppingCart.create({ userId: user.id });
+      res.status(201).json(user, shoppingCart.id);
    } catch (error) {
-      res.status(400).send("User not created");
+      res.status(400).send("User not created: ", error);
    }
 }
 
-module.exports = { createUser }
+const updateUser = async (req, res) => {
+   // params: userId, firstname, lastname, email, password, role
+   try {
+      const user = await User.update(req.body, {
+         where: { id: req.params.id },
+         returning: true
+      });
+      res.status(201).send(user);
+   } catch (error) {
+      res.status(400).send("User not updated: ", error);
+   }
+}
+
+module.exports = { createUser, updateUser }
