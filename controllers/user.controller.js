@@ -1,7 +1,7 @@
 const { User, ShoppingCart } = require("../models");
 
 const createUser = async (req, res) => {
-   // params: userId, firstname, lastname, email, password, role
+   // body: userId, firstname, lastname, email, password, role
    try {
       const user = await User.create(req.body);
       const shoppingCart = await ShoppingCart.create({ userId: user.id });
@@ -12,10 +12,10 @@ const createUser = async (req, res) => {
 }
 
 const updateUser = async (req, res) => {
-   // params: userId, firstname, lastname, email, password, role
+   // body: userId, firstname, lastname, email, password, role
    try {
       const user = await User.update(req.body, {
-         where: { id: req.params.id },
+         where: { id: req.body.id },
          returning: true
       });
       res.status(201).send(user);

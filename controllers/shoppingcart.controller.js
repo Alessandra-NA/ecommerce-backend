@@ -1,9 +1,9 @@
 const { ShoppingCart, ShoppingCartProduct, Product } = require("../models"); 
 
 const getCartInfo = async (req, res) => {
-   const { shoppingCartId } = req.params;
+   const { shoppingCartId } = req.body;
    try {
-      // TODO: Revisar esto, funciona??
+      // TODO: Check
       const shoppingCart = await ShoppingCart.findByPk(shoppingCartId, {
          include: [
             {
@@ -80,7 +80,7 @@ async function updateSubTotal(shoppingCartId, productId, quantity, action) {
    return shoppingCart;
 }
 
-// TODO: PLACE ORDER
+// TODO: Placing order
 
 
 
