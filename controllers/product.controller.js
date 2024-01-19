@@ -11,7 +11,7 @@ const createProduct = async (req, res) => {
 }
 const getProductInfo = async (req, res) => {
    try {
-      const product = await Product.findByPk(req.body.productId)
+      const product = await Product.findByPk(req.params.productId)
       res.status(201).json(product)
    } catch (error) {
       res.status(400).send("Product not found: " + error)
@@ -19,10 +19,9 @@ const getProductInfo = async (req, res) => {
 }
 const updateProductInfo = async (req, res) => {
    try {
-      const product = await Product.update(req.body, {
-         where: { id: req.body.productId },
-         returning: true
-      })
+      const product = await Product.findByPk(req.body.productId)
+      product.update(req.body)
+      await product.save()
       res.status(201).json(product)
    } catch (error) {
       res.status(400).send("Product not updated: " + error)
@@ -48,6 +47,28 @@ const getSaleProducts = async (req, res) => {
       res.status(400).send("Error getting sale products: " + error)
    }
 }
+
+const getCategoryProducts = async (req, res) => {
+   try {
+      const categoryProducts = await Product.findAll({
+         where: {
+            category: req.params.category
+         }
+      })
+      res.status(201).json(categoryProducts)
+   } catch (error) {
+      res.status(400).send("Error getting category products: " + error)
+   }
+}
+
+const getFeaturedProducts = async (req, res) => {
+   try {
+      const featuredProducts = await Product.findAll()
+      res.status(201).json(featuredProducts.slice(0, 4))
+   } catch (error) {
+      res.status(400).send("Error getting featured products: " + error)
+   }
+}
 const addCustomerFeedback = async (req, res) => {
    // TODO: Add customer feedback
 }
@@ -57,4 +78,4 @@ function recalculateSubtotal(products) {
 }
 
 
-module.exports = { createProduct, getProductInfo, updateProductInfo, deleteProduct, getSaleProducts }
+module.exports = { createProduct, getProductInfo, updateProductInfo, deleteProduct, getSaleProducts, getCategoryProducts, getFeaturedProducts }

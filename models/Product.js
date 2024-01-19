@@ -1,4 +1,4 @@
-'use strict';
+ 'use strict';
 const { Model, DataTypes } = require('sequelize');
 const sequelize = require('../db');
 
@@ -26,7 +26,7 @@ Product.init({
       allowNull: false
    },
 	images: {
-		type: DataTypes.JSON,
+		type: DataTypes.ARRAY(DataTypes.STRING),
 		allowNull: false
    },
    numberInStock: {
@@ -42,7 +42,7 @@ Product.init({
       allowNull: true
    },
    tags: {
-      type: DataTypes.JSON,
+      type: DataTypes.ARRAY(DataTypes.STRING),
       allowNull: true
    },
    brand: {
