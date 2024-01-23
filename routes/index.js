@@ -1,7 +1,7 @@
 const { Router } = require('express');
 const { createUser, loginUser, logoutUser, updateUser, getUserInfo, checkAdmin } = require('../controllers/user.controller');
 const { addProductCart, deleteProductCart, getCartInfo } = require('../controllers/shoppingcart.controller');
-const { createProduct, getProductInfo, updateProductInfo, deleteProduct, getSaleProducts, getCategoryProducts, getFeaturedProducts } = require('../controllers/product.controller');
+const { createProduct, getProductInfo, updateProductInfo, deleteProduct, getSaleProducts, getCategoryProducts, getFeaturedProducts, filterProducts } = require('../controllers/product.controller');
 const { authAdmin } = require('../middlewares/auth');
 
 
@@ -29,5 +29,6 @@ router.post('/product/delete', authAdmin, deleteProduct)
 router.get('/product/getSale', getSaleProducts)
 router.get('/product/category/:category', getCategoryProducts)
 router.get('/product/featured', getFeaturedProducts)
+router.post('/product/filter', filterProducts)
 
 module.exports = router;

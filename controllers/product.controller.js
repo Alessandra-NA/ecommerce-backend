@@ -69,6 +69,42 @@ const getFeaturedProducts = async (req, res) => {
       res.status(400).send("Error getting featured products: " + error)
    }
 }
+
+const filterProducts = async (req, res) => {
+   // req.body = { minPrice, maxPrice, minRating, category, sortingOrder }
+   console.log(req.body)
+   try {
+      if (req.body.sortingOrder === 'Latest') sorting = [['updatedAt', 'DESC']]
+      if (req.body.sortingOrder === 'Price - Low to High') sorting = [['price', 'ASC']]
+      if (req.body.sortingOrder === 'Price - High to Low') sorting = [['price', 'DESC']]
+
+      if (req.body.category === 'All') {
+         var products = await Product.findAll({
+            where: {
+               price: { [Op.between]: [req.body.minPrice, req.body.maxPrice] },
+               rating: { [Op.gte]: req.body.minRating },
+            },
+            order: sorting
+         })
+      }
+      else {
+         var products = await Product.findAll({
+            where: {
+               category: req.body.category,
+               price: { [Op.between]: [req.body.minPrice, req.body.maxPrice] },
+               rating: { [Op.gte]: req.body.minRating },
+            },
+            order: sorting
+         })
+      }
+      res.status(201).send(products)
+   } catch (error) {
+      res.status(400).send("Error getting filtered products: " + error)
+   }
+}
+
+
+
 const addCustomerFeedback = async (req, res) => {
    // TODO: Add customer feedback
 }
@@ -78,4 +114,4 @@ function recalculateSubtotal(products) {
 }
 
 
-module.exports = { createProduct, getProductInfo, updateProductInfo, deleteProduct, getSaleProducts, getCategoryProducts, getFeaturedProducts }
+module.exports = { createProduct, getProductInfo, updateProductInfo, deleteProduct, getSaleProducts, getCategoryProducts, getFeaturedProducts, filterProducts }
