@@ -1,65 +1,122 @@
 const { ShoppingCart, ShoppingCartProduct, Product } = require("../models"); 
+const jwt = require("jsonwebtoken");
+const dotenv = require('dotenv');
 
-const getCartInfo = async (req, res) => {
-   const { shoppingCartId } = req.body;
+dotenv.config();
+
+const getCart = async (req, res) => {
    try {
-      // TODO: Check
-      const shoppingCart = await ShoppingCart.findByPk(shoppingCartId, {
-         include: [
-            {
-               model: Product,
-               through: { attributes: ['quantity'] }
-            },
-         ],
-      })
-      const products = shoppingCart.products
-      const cartInfo = {
-         subtotal: shoppingCart.subtotal,
-         products: products.map((product) => ({
-            id: product.id,
-            name: product.name, 
-            quantity: product.ShoppingCartProduct.quantity,
-         }))
+      const cookie = req.cookies['jwt'];
+      const claims = jwt.verify(cookie, process.env.SECRET);
+      if (!claims) {
+         res.status(401).send("Unauthenticated user");
       }
-      res.json(cartInfo);
+      var shoppingCart = await ShoppingCart.findOne({
+         where: { userId: claims.id },
+         include: { model: Product, as: 'products' }
+      });
+      res.status(201).json(shoppingCart);
    } catch (error) {
       res.status(400).send("Could not retrieve info from cart: " + error);
    }
 }
 const addProductCart = async (req, res) => {
-   const { productId, quantity, shoppingCartId } = req.body;
+   const { productId, quantity } = req.body;
+   if (quantity <= 0) {
+      res.status(400).send("Quantity must be greater than 0");
+      return
+   }
    try {
-      const productInCart = await ShoppingCartProduct.findOne({ where: { productId, shoppingCartId } });
+      const cookie = req.cookies['jwt'];
+      const claims = jwt.verify(cookie, process.env.SECRET);
+      if (!claims) {
+         res.status(401).send("Unauthenticated user");
+      }
+      var shoppingCart = await ShoppingCart.findOne({
+         where: { userId: claims.id },
+         include: {model: Product, as: 'products'}
+      });
+      const productInCart = await ShoppingCartProduct.findOne({
+         where: {
+            productId,
+            cartId: shoppingCart.id
+         }
+      });
       // if item is already on cart
       if (productInCart) {
-         productInCart.quantity += quantity;
+         productInCart.quantity += Number(quantity);
          await productInCart.save();
       } else { // if item is new in cart
-         await ShoppingCartProduct.create({ productId, quantity, shoppingCartId });
+         console.log(productId, quantity, shoppingCart.id)
+         await ShoppingCartProduct.create({ productId, quantity, cartId: shoppingCart.id });
       }
-      const shoppingCart = await updateSubTotal(shoppingCartId, productId, quantity, 'add');
+      shoppingCart = await updateSubTotal(shoppingCart, productId, quantity, 'add');
       res.status(201).json(shoppingCart);
    } catch (error) {
+      console.log(error)
       res.status(400).send("Product could not be added to cart: " + error);
    }
 }
-
 const deleteProductCart = async (req, res) => {
-   const { productId, quantity, shoppingCartId } = req.body;
+   var { productId, quantity } = req.body;
+   if (quantity <= 0) {
+      res.status(400).send("Quantity must be greater than 0");
+      return
+   }
    try {
-      const productInCart = await ShoppingCartProduct.findOne({ where: { productId, shoppingCartId } });
+      const cookie = req.cookies['jwt'];
+      const claims = jwt.verify(cookie, process.env.SECRET);
+      if (!claims) {
+         res.status(401).send("Unauthenticated user");
+      }
+      var shoppingCart = await ShoppingCart.findOne({
+         where: { userId: claims.id },
+         include: { model: Product, as: 'products' }
+      });
+      const productInCart = await ShoppingCartProduct.findOne({
+         where: {
+            productId,
+            cartId: shoppingCart.id
+         }
+      });
+
       // if all items were deleted fom cart
       if (productInCart.quantity <= quantity) {
+         quantity = productInCart.quantity
          await productInCart.destroy();
       } else { // if only some items were deleted from cart
          productInCart.quantity -= quantity;
          await productInCart.save();
       }
-      const shoppingCart = await updateSubTotal(shoppingCartId, productId, quantity, 'delete');
+      shoppingCart = await updateSubTotal(shoppingCart, productId, quantity, 'delete');
       res.status(201).json(shoppingCart);
    } catch (error) {
       res.status(400).send("Product could not be removed from cart: " + error);
    }
+}
+const updateQuantityCart = async (req, res) => {
+   const cart = req.body.cart
+   const cookie = req.cookies['jwt'];
+   const claims = jwt.verify(cookie, process.env.SECRET);
+   if (!claims) {
+      res.status(401).send("Unauthenticated user");
+   }
+   var savedCart = await ShoppingCart.findOne({ where: { userId: claims.id }, include: { model: Product, as: 'products' } });
+   for (const product of cart.products) {
+      const savedProd = savedCart.products.find(p => p.id === product.id);
+
+      if (savedProd.ShoppingCartProduct.quantity !== product.ShoppingCartProduct.quantity) {
+         if (product.ShoppingCartProduct.quantity > 0) {
+            await savedProd.ShoppingCartProduct.update({ quantity: product.ShoppingCartProduct.quantity })
+         } else if (product.ShoppingCartProduct.quantity === 0) {
+            await savedProd.ShoppingCartProduct.destroy();
+         }
+         await savedCart.reload({ include: { model: Product, as: 'products' } });
+      }
+   }
+
+   res.status(200).send(savedCart);
+
 }
 
 /**
@@ -71,12 +128,12 @@ const deleteProductCart = async (req, res) => {
  * @param {string} action - The action to perform ('add' or 'remove').
  * @return {Object} The updated shopping cart object.
  */
-async function updateSubTotal(shoppingCartId, productId, quantity, action) {
-   var shoppingCart = await ShoppingCart.findByPk(shoppingCartId);
+async function updateSubTotal(shoppingCart, productId, quantity, action) {
    const product = await Product.findByPk(productId);
    if (action === 'add') shoppingCart.subtotal += product.price * quantity;
    else shoppingCart.subtotal -= product.price * quantity;
    await shoppingCart.save();
+   await shoppingCart.reload({ include: { model: Product, as: 'products' } });
    return shoppingCart;
 }
 
@@ -84,4 +141,4 @@ async function updateSubTotal(shoppingCartId, productId, quantity, action) {
 
 
 
-module.exports = { addProductCart, deleteProductCart, getCartInfo }
+module.exports = { addProductCart, deleteProductCart, getCart, updateQuantityCart }

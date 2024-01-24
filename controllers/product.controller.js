@@ -72,7 +72,6 @@ const getFeaturedProducts = async (req, res) => {
 
 const filterProducts = async (req, res) => {
    // req.body = { minPrice, maxPrice, minRating, category, sortingOrder }
-   console.log(req.body)
    try {
       if (req.body.sortingOrder === 'Latest') sorting = [['updatedAt', 'DESC']]
       if (req.body.sortingOrder === 'Price - Low to High') sorting = [['price', 'ASC']]

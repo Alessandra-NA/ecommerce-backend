@@ -38,14 +38,18 @@ const createUser = async (req, res) => {
 
 const loginUser = async (req, res) => {
    // body: email, password
-   const user = await User.findOne({ where: { email: req.body.email } });
-   if (user && (await bycrypt.compare(req.body.password, user.password))) {
-      const { password, ...userData } = user.dataValues
-      const token = jwt.sign({id: user.id}, process.env.SECRET, { expiresIn: '1d' });
-      res.cookie('jwt', token, { httpOnly: true, maxAge: 1000 * 60 * 60 * 24 })
-      res.status(201).json({ user: userData });
-   } else {
-      res.status(400).send("User not found");
+   try {
+      const user = await User.findOne({ where: { email: req.body.email } });
+      if (user && (await bycrypt.compare(req.body.password, user.password))) {
+         const { password, ...userData } = user.dataValues
+         const token = jwt.sign({ id: user.id }, process.env.SECRET, { expiresIn: '1d' });
+         res.cookie('jwt', token, { httpOnly: true, maxAge: 1000 * 60 * 60 * 24 })
+         res.status(201).json({ user: userData });
+      } else {
+         res.status(400).send("User not found");
+      }
+   } catch (error) {
+      res.status(400).send("Error: " + error);
    }
 }
 
@@ -62,7 +66,6 @@ const getUserInfo = async (req, res) => {
    try {
       const cookie = req.cookies['jwt'];
       const claims = jwt.verify(cookie, process.env.SECRET);
-      console.log(claims)
       if (!claims) {
          res.status(401).send("Unauthenticated user");
       }
