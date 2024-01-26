@@ -102,6 +102,21 @@ const filterProducts = async (req, res) => {
    }
 }
 
+const getProductSearch = async (req, res) => {
+   // req.body = { searchString }
+   try {
+      const products = await Product.findAll({
+         where: {
+            name: {
+               [Op.iLike]: `%${req.body.searchString}%`, }
+         }
+      })
+      res.status(201).send(products)
+   } catch (error) {
+      res.status(400).send("Error getting search products: " + error)
+   }
+}
+
 
 
 const addCustomerFeedback = async (req, res) => {
@@ -113,4 +128,4 @@ function recalculateSubtotal(products) {
 }
 
 
-module.exports = { createProduct, getProductInfo, updateProductInfo, deleteProduct, getSaleProducts, getCategoryProducts, getFeaturedProducts, filterProducts }
+module.exports = { createProduct, getProductInfo, updateProductInfo, deleteProduct, getSaleProducts, getCategoryProducts, getFeaturedProducts, filterProducts, getProductSearch }
