@@ -2,6 +2,7 @@ const { User, ShoppingCart } = require("../models");
 const bycrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const dotenv = require('dotenv');
+const { transporter } = require('../config/mailer');
 
 dotenv.config();
 
@@ -30,6 +31,7 @@ const createUser = async (req, res) => {
       const { password, ...userData } = user.dataValues
       const token = jwt.sign({ id: user.id }, process.env.SECRET, { expiresIn: '1d' });
       res.cookie('jwt', token, { httpOnly: true, maxAge: 1000 * 60 * 60 * 24 })
+      notifyByEmail('User created', 'User with email ' + user.email +' has been created')
       res.status(201).json({ user: userData, shoppingCart });
    } catch (error) {
       res.status(400).send("User not created: " + error);
@@ -44,6 +46,7 @@ const loginUser = async (req, res) => {
          const { password, ...userData } = user.dataValues
          const token = jwt.sign({ id: user.id }, process.env.SECRET, { expiresIn: '1d' });
          res.cookie('jwt', token, { httpOnly: true, maxAge: 1000 * 60 * 60 * 24 })
+         notifyByEmail('User logged in', 'User with email ' + user.email +' has logged in')
          res.status(201).json({ user: userData });
       } else {
          res.status(400).send("User not found");
@@ -92,6 +95,19 @@ const updateUser = async (req, res) => {
 
 const checkAdmin = async (req, res, next) => {
    res.status(201).send({ isAdmin: true });
+}
+
+function notifyByEmail(subject, message) {
+   try {
+      transporter.sendMail({
+         from: '<' + process.env.MAIL_USER + '>',
+         to: process.env.MAIL_USER,
+         subject: 'E-Commerce: ' + subject,
+         html: '<b>' + message + '</b>'
+      })
+   } catch (error) {
+      console.log(error)
+   }
 }
 
 module.exports = { createUser, loginUser, updateUser, getUserInfo, logoutUser, checkAdmin }

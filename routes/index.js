@@ -1,7 +1,7 @@
 const { Router } = require('express');
 const { createUser, loginUser, logoutUser, updateUser, getUserInfo, checkAdmin } = require('../controllers/user.controller');
 const { addProductCart, deleteProductCart, getCart, updateQuantityCart } = require('../controllers/shoppingcart.controller');
-const { createProduct, getProductInfo, updateProductInfo, deleteProduct, getSaleProducts, getCategoryProducts, getFeaturedProducts, filterProducts, getProductSearch } = require('../controllers/product.controller');
+const { createProduct, updateProduct, getProductInfo, deleteProduct, getSaleProducts, getCategoryProducts, getFeaturedProducts, filterProducts, getProductSearch, getAllProducts } = require('../controllers/product.controller');
 const { authAdmin } = require('../middlewares/auth');
 
 
@@ -23,10 +23,11 @@ router.post('/cart/deleteProduct', deleteProductCart)
 router.get('/cart', getCart)
 router.post('/cart/updateQuantity', updateQuantityCart)
 
+router.get('/product', getAllProducts)
 router.post('/product/create', authAdmin, createProduct)
-router.get('/product/get/:productId', getProductInfo)
-router.post('/product/update', authAdmin, updateProductInfo)
+router.post('/product/update', authAdmin, updateProduct)
 router.post('/product/delete', authAdmin, deleteProduct)
+router.get('/product/get/:productId', getProductInfo)
 router.get('/product/getSale', getSaleProducts)
 router.get('/product/category/:category', getCategoryProducts)
 router.get('/product/featured', getFeaturedProducts)

@@ -26,7 +26,7 @@ Product.init({
       allowNull: false
    },
 	images: {
-		type: DataTypes.ARRAY(DataTypes.STRING),
+		type: DataTypes.ARRAY(DataTypes.TEXT),
 		allowNull: false
    },
    numberInStock: {
